@@ -3,10 +3,12 @@ import React, { useState } from 'react';
 import { Linking, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { FloatingActions } from '../components/floating-actions';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // NEW
 
 
 export default function UserGuide() {
   // Language toggle: ENG or MM
+  const insets = useSafeAreaInsets(); // NEW: define safe-area insets
   const [lang, setLang] = useState<'ENG' | 'MM'>('MM');
   const [videoError, setVideoError] = useState(false);
 
@@ -76,6 +78,28 @@ export default function UserGuide() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: insets.top,
+          backgroundColor: '#538df8ff',
+        }}
+      />
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: insets.bottom,
+          backgroundColor: '#5B3DB5',
+        }}
+      />
       <LinearGradient
         colors={['#538df8ff', '#5B3DB5', '#5B3DB5']}
         start={{ x: 0, y: 0 }}

@@ -13,15 +13,15 @@ export function FloatingActions({ style }: { style?: ViewStyle }) {
         style={[
           {
             position: 'absolute',
-            right: 12,
+            right: 16,
             top: '50%',
-            transform: [{ translateY: -24 }],
-            width: 48,
-            height: 48,
-            borderTopLeftRadius: 16,
-            borderBottomLeftRadius: 16,
-            borderTopRightRadius: 8,
-            borderBottomRightRadius: 8,
+            transform: [{ translateY: -28 }], // center vertically for 56dp height
+            width: 56,
+            height: 56,
+            borderTopLeftRadius: 18,
+            borderBottomLeftRadius: 18,
+            borderTopRightRadius: 10,
+            borderBottomRightRadius: 10,
             backgroundColor: '#A7D8D8',
             alignItems: 'center',
             justifyContent: 'center',

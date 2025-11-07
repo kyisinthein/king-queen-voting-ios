@@ -1,11 +1,11 @@
-import { Ionicons } from '@expo/vector-icons';
+import { FloatingActions } from '@/components/floating-actions';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, SafeAreaView, Text, View } from 'react-native';
 import { supabase } from '../lib/supabase';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { FloatingActions } from '@/components/floating-actions';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // NEW
 
 type University = {
   id: string;
@@ -64,8 +64,34 @@ export default function Home() {
     router.push({ pathname: '/university/[id]', params: { id: u.id, name: u.name } });
   };
 
+  const insets = useSafeAreaInsets(); // NEW
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
+      {/* Paint safe-area top and bottom */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: insets.top,
+          backgroundColor: '#538df8ff',
+        }}
+      />
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: insets.bottom,
+          backgroundColor: '#5B3DB5',
+        }}
+      />
+
       <LinearGradient
         colors={['#538df8ff', '#5B3DB5', '#5B3DB5']} // top→middle→bottom
         start={{ x: 0, y: 0 }}
@@ -167,7 +193,7 @@ export default function Home() {
                         justifyContent: 'center',
                       }}
                     >
-                      <IconSymbol name="chevron.right" size={20} color="rgba(255,255,255,1)" />
+                      <IconSymbol name="chevron.right" size={12} color="rgba(255,255,255,1)" />
                     </View>
                   </Pressable>
                 )}

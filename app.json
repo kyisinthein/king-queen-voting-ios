@@ -14,7 +14,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.workifyorg.kqvote",
-      "buildNumber": "3",
+      "buildNumber": "7",
       "supportsTablet": false,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false

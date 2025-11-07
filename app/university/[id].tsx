@@ -2,8 +2,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Pressable, SafeAreaView, Text, View } from 'react-native';
-import { supabase } from '../../lib/supabase';
 import { FloatingActions } from '../../components/floating-actions';
+import { supabase } from '../../lib/supabase';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // NEW
 
 
 
@@ -18,6 +19,7 @@ type Candidate = {
 
 export default function UniversityCandidates() {
   const { id, name } = useLocalSearchParams<{ id: string; name?: string }>();
+  const insets = useSafeAreaInsets(); // NEW: place early to keep hook order stable
   const [gender, setGender] = useState<'Male' | 'Female'>('Male');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -114,6 +116,29 @@ export default function UniversityCandidates() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
+      {/* Paint safe-area top and bottom */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: insets.top,
+          backgroundColor: '#538df8ff',
+        }}
+      />
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: insets.bottom,
+          backgroundColor: '#5B3DB5',
+        }}
+      />
       <LinearGradient
         colors={['#538df8ff', '#5B3DB5', '#5B3DB5']}
         start={{ x: 0, y: 0 }}
@@ -287,7 +312,7 @@ export default function UniversityCandidates() {
             right: 12,
             bottom: 84,
             top: undefined,
-            transform: [{ translateY: 0 }],
+            transform: [{ translateY: -200 }],
             zIndex: 200,
           }}
         />

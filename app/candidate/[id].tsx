@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, Pressable, SafeAreaView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // NEW
 import { FloatingActions } from '../../components/floating-actions';
 import { getDeviceId } from '../../lib/device-id';
 import { supabase } from '../../lib/supabase';
@@ -28,6 +29,7 @@ type Category = {
 
 export default function CandidateDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const insets = useSafeAreaInsets(); // moved here to keep hook order stable
   const [candidate, setCandidate] = useState<Candidate | null>(null);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState(false);
@@ -251,6 +253,29 @@ export default function CandidateDetails() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
+      {/* Paint safe-area top and bottom */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: insets.top,
+          backgroundColor: '#538df8ff',
+        }}
+      />
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: insets.bottom,
+          backgroundColor: '#6a30db',
+        }}
+      />
       <LinearGradient
         colors={['#538df8ff', '#6a30db']}
         start={{ x: 0, y: 0 }}
@@ -302,6 +327,35 @@ export default function CandidateDetails() {
                 <Text style={{ color: '#666' }}>No photo</Text>
               </View>
             )}
+
+            {/* Back button << */}
+            <Pressable
+              onPress={() => router.back()}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+              hitSlop={10}
+              style={{
+                position: 'absolute',
+                top: 12,
+                left: 12,
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: 'rgba(255,255,255,0.95)',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: 'rgba(0,0,0,0.06)',
+                shadowColor: '#000',
+                shadowOpacity: 0.08,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 6 },
+              }}
+            >
+              <Text style={{ fontWeight: '800', fontSize: 15 }}>{'‹‹'}</Text>
+            </Pressable>
+
+            {/* Waist number badge */}
             <View
               style={{
                 position: 'absolute',
@@ -463,7 +517,7 @@ export default function CandidateDetails() {
             right: 12,
             bottom: 84,
             top: undefined,
-            transform: [{ translateY: 0 }],
+            transform: [{ translateY: -310 }],
             zIndex: 200,
           }}
         />
@@ -569,6 +623,20 @@ export default function CandidateDetails() {
               {/* Action buttons */}
               <View style={{ flexDirection: 'row', marginTop: 24, gap: 12 }}>
                 <Pressable
+                  onPress={() => setShowCategoryModal(false)}
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#f5f5f5',
+                    paddingVertical: 14,
+                    borderRadius: 16,
+                  }}
+                >
+                  <Text style={{ color: '#666', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>
+                    Cancel
+                  </Text>
+                </Pressable>
+                
+                <Pressable
                   onPress={submitVote}
                   disabled={!selectedCategory || voting || (ticketsLeft ?? 0) <= 0}
                   style={{
@@ -583,19 +651,7 @@ export default function CandidateDetails() {
                   </Text>
                 </Pressable>
 
-                <Pressable
-                  onPress={() => setShowCategoryModal(false)}
-                  style={{
-                    flex: 1,
-                    backgroundColor: '#f5f5f5',
-                    paddingVertical: 14,
-                    borderRadius: 16,
-                  }}
-                >
-                  <Text style={{ color: '#666', fontSize: 16, fontWeight: '600', textAlign: 'center' }}>
-                    Cancel
-                  </Text>
-                </Pressable>
+                
               </View>
             </Pressable>
           </Pressable>

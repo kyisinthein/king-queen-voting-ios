@@ -14,10 +14,8 @@
       "ios": { "resourceClass": "m-medium" }
     },
     "production": {
-      "ios": { "resourceClass": "m-medium" }
+      "ios": { "resourceClass": "m-medium" },
+      "autoIncrement": true
     }
-  },
-  "submit": {
-    "production": {}
   }
 }
