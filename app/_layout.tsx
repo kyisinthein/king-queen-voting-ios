@@ -14,8 +14,13 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+      <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        // Hide headers to remove the white section on these pages
+        <Stack.Screen name="candidate/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="university/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="sponsors" options={{ headerShown: false }} />
+        <Stack.Screen name="home" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />

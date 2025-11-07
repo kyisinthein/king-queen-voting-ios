@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, Pressable } from 'react-native';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
@@ -7,7 +7,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
 
-export default function HomeScreen() {
+import { FloatingActions } from '@/components/floating-actions';
+
+export default function TabIndex() {
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -21,6 +23,26 @@ export default function HomeScreen() {
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
       </ThemedView>
+
+      {/* Go to Home button */}
+      <ThemedView style={{ marginTop: 8 }}>
+        <Link href="/home" asChild>
+          <Pressable
+            style={{
+              marginTop: 8,
+              backgroundColor: '#4D79FF',
+              paddingVertical: 12,
+              borderRadius: 12,
+              alignItems: 'center',
+            }}>
+            <ThemedText style={{ color: '#fff', fontWeight: '600' }}>
+              Go to Home
+            </ThemedText>
+          </Pressable>
+        </Link>
+      </ThemedView>
+
+      {/* Existing starter content */}
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
         <ThemedText>
@@ -74,6 +96,8 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
       </ThemedView>
+      {/* Floating Quick Actions visible on this page */}
+      <FloatingActions />
     </ParallaxScrollView>
   );
 }
@@ -94,5 +118,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: 'absolute',
+  },
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

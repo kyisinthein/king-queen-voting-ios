@@ -1,0 +1,386 @@
+-- Schema: Universities, Admins, Categories, Candidates, Votes
+-- Note: This step creates tables + constraints only (no RLS yet).
+
+-- 1) Universities: the list users choose from
+create table if not exists public.universities (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  slug text generated always as (regexp_replace(lower(name), '\s+', '-', 'g')) stored,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists universities_window_idx on public.universities (voting_start_at, voting_end_at);
+
+-- 2) University Admins: one or more admins per university (no super-admin)
+--    auth.users is the Supabase user table for email/password auth
+-- Replace admins table with id, university_id, password_hash (hashed), created_at
+
+-- Enable pgcrypto for password hashing (one-time)
+create extension if not exists pgcrypto;
+
+-- Drop existing admins (safe since it's empty in your screenshot)
+drop table if exists public.admins cascade;
+
+-- Create new admins table
+create table public.admins (
+  id uuid primary key default gen_random_uuid(),
+  university_id uuid not null references public.universities(id) on delete cascade,
+  password_hash text not null,
+  created_at timestamptz not null default now(),
+  unique (university_id)
+);
+
+create index if not exists admins_university_idx on public.admins (university_id);
+
+-- Helper: insert an admin with hashed password
+-- Example: replace :university_id and 'MySecretPassword' with real values
+-- SELECT crypt('MySecretPassword', gen_salt('bf')) returns a salted bcrypt hash
+insert into public.admins (university_id, password_hash)
+values ('00000000-0000-0000-0000-000000000000', crypt('MySecretPassword', gen_salt('bf')));
+
+-- Helper: change admin password (hash)
+update public.admins
+set password_hash = crypt('NewSecretPassword', gen_salt('bf'))
+where university_id = '00000000-0000-0000-0000-000000000000';
+
+-- Helper: verify password (returns true/false)
+-- This is a quick check you can run in SQL; later we’ll provide an RPC function for the app.
+select (a.password_hash = crypt('MySecretPassword', a.password_hash)) as ok
+from public.admins a
+where a.university_id = '00000000-0000-0000-0000-000000000000';
+
+-- 3) Categories: 8 topics per university (male/female × king|style|popular|innocent)
+create table if not exists public.categories (
+  id uuid primary key default gen_random_uuid(),
+  university_id uuid not null references public.universities(id) on delete cascade,
+  gender text not null check (gender in ('male','female')),
+  type text not null check (type in ('king','style','popular','innocent')),
+  -- Voting window (controls when voting is allowed)
+  voting_start_at timestamptz not null,
+  voting_end_at   timestamptz not null,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  -- Ensure at most one category per (university, gender, type)
+  unique (university_id, gender, type)
+);
+
+create index if not exists categories_university_idx on public.categories (university_id);
+create index if not exists categories_window_idx on public.categories (voting_start_at, voting_end_at);
+
+-- 4) Candidates: 13–15 per gender per university with the 6 fields
+create table if not exists public.candidates (
+  id uuid primary key default gen_random_uuid(),
+  university_id uuid not null references public.universities(id) on delete cascade,
+  gender text not null check (gender in ('male','female')),
+  waist_number int not null,
+  name text not null,
+  birthday date,
+  height_cm int,
+  hobby text,
+  image_url text,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  -- waist number unique within the same university AND gender
+  unique (university_id, gender, waist_number)
+);
+
+create index if not exists candidates_university_idx on public.candidates (university_id);
+create index if not exists candidates_gender_idx on public.candidates (gender);
+
+-- 5) Votes: one vote per device per category
+create table if not exists public.votes (
+  id uuid primary key default gen_random_uuid(),
+  university_id uuid not null references public.universities(id) on delete cascade,
+  category_id uuid not null references public.categories(id) on delete cascade,
+  candidate_id uuid not null references public.candidates(id) on delete cascade,
+  device_id text not null, -- persistent installation_id per device (see client implementation)
+  created_at timestamptz not null default now(),
+  -- Enforce one vote per topic per device
+  unique (device_id, category_id)
+);
+
+create index if not exists votes_university_idx on public.votes (university_id);
+create index if not exists votes_category_idx on public.votes (category_id);
+create index if not exists votes_candidate_idx on public.votes (candidate_id);
+create index if not exists votes_device_idx on public.votes (device_id);
+
+-- NOTE ON CONSISTENCY (to be enforced in RLS step):
+-- - votes.university_id must match both categories.university_id and candidates.university_id.
+--   This cannot be expressed via CHECK constraints across tables; we will enforce with RLS policies.
+-- - RLS will also enforce voting within [voting_start_at, voting_end_at].
+
+/****************************************************
+ RLS ENABLE + POLICIES
+****************************************************/
+
+-- Enable RLS
+alter table public.universities enable row level security;
+alter table public.admins enable row level security;
+alter table public.categories enable row level security;
+alter table public.candidates enable row level security;
+alter table public.votes enable row level security;
+
+-- Universities: public can read active universities
+drop policy if exists "public read active universities" on public.universities;
+create policy "public read active universities"
+on public.universities for select
+to anon, authenticated
+using (is_active = true);
+
+-- Admins: admin-only access via a secure RPC later; block direct reads/writes from anon
+drop policy if exists "no direct select for admins" on public.admins;
+create policy "no direct select for admins"
+on public.admins for select
+to anon, authenticated
+using (false);
+
+drop policy if exists "no direct insert/update/delete for admins" on public.admins;
+create policy "no direct insert/update/delete for admins"
+on public.admins for all
+to anon, authenticated
+using (false)
+with check (false);
+
+-- Categories: public read active rows; optionally show only within window
+drop policy if exists "public read active categories" on public.categories;
+create policy "public read active categories"
+on public.categories for select
+to anon, authenticated
+using (is_active = true);
+
+-- Candidates: public read active candidates
+drop policy if exists "public read active candidates" on public.candidates;
+create policy "public read active candidates"
+on public.candidates for select
+to anon, authenticated
+using (is_active = true);
+
+-- Votes:
+-- 1) Public cannot read raw votes
+drop policy if exists "no public select votes" on public.votes;
+create policy "no public select votes"
+on public.votes for select
+to anon, authenticated
+using (false);
+
+-- 2) Allow inserts only within category window and consistent university scope
+-- RPC: per-device ticket usage by gender for a university
+drop function if exists public.get_device_ticket_usage(uuid, text);
+
+create or replace function public.get_device_ticket_usage(univ_id uuid, p_device_id text)
+returns table (
+  university_id uuid,
+  gender text,
+  total_categories int,
+  used_tickets int,
+  remaining_tickets int
+)
+language sql
+security definer
+set search_path = public
+as $$
+  with categories_per_gender as (
+    select c.university_id, c.gender, count(*)::int as total_categories
+    from public.categories c
+    where c.university_id = univ_id
+      and c.is_active = true
+    group by c.university_id, c.gender
+  ),
+  used as (
+    select c.gender, count(distinct v.category_id)::int as used_tickets
+    from public.votes v
+    join public.categories c on c.id = v.category_id
+    where v.university_id = univ_id
+      and v.device_id = p_device_id
+    group by c.gender
+  )
+  select
+    univ_id as university_id,
+    cpg.gender,
+    cpg.total_categories,
+    coalesce(u.used_tickets, 0) as used_tickets,
+    greatest(cpg.total_categories - coalesce(u.used_tickets, 0), 0) as remaining_tickets
+  from categories_per_gender cpg
+  left join used u on u.gender = cpg.gender;
+$$;
+
+revoke all on function public.get_device_ticket_usage(uuid, text) from public;
+grant execute on function public.get_device_ticket_usage(uuid, text) to anon, authenticated;
+
+-- 3) Block updates/deletes from public (votes are immutable once cast)
+drop policy if exists "no update delete votes" on public.votes;
+create policy "no update delete votes"
+on public.votes for update
+to anon, authenticated
+using (false)
+with check (false);
+
+create policy "no delete votes"
+on public.votes for delete
+to anon, authenticated
+using (false);
+
+/****************************************************
+ VIEWS FOR RESULTS
+****************************************************/
+
+-- Aggregate counts per category/candidate
+create or replace view public.category_results as
+select
+  v.category_id,
+  v.candidate_id,
+  count(*)::int as votes
+from public.votes v
+group by v.category_id, v.candidate_id;
+
+-- Top result per category (public)
+-- Returns only the single top candidate for each category_id
+create or replace view public.public_top_results as
+with ranked as (
+  select
+    cr.category_id,
+    cr.candidate_id,
+    cr.votes,
+    row_number() over (partition by cr.category_id order by cr.votes desc, cr.candidate_id) as rn
+  from public.category_results cr
+)
+select
+  r.category_id,
+  r.candidate_id,
+  r.votes
+from ranked r
+where r.rn = 1;
+
+-- Admin full results view with candidate info and category context
+create or replace view public.admin_full_results as
+select
+  cat.university_id,
+  cat.id as category_id,
+  cat.gender,
+  cat.type,
+  cand.id as candidate_id,
+  cand.waist_number,
+  cand.name,
+  cr.votes
+from public.category_results cr
+join public.candidates cand on cand.id = cr.candidate_id
+join public.categories cat on cat.id = cr.category_id
+join public.universities c on c.id = cat.university_id;
+
+-- Grants: public can read top results; admin view restricted via policy
+grant select on public.public_top_results to anon, authenticated;
+grant select on public.category_results to authenticated; -- optional
+
+/****************************************************
+ RLS ON VIEWS VIA SECURITY BARRIERS
+****************************************************/
+
+-- Restrict admin_full_results to only authenticated users who are admins of that university.
+-- Supabase applies RLS only on tables, not views. We enforce access by wrapping the view reads behind a SECURE function.
+
+create or replace function public.get_admin_full_results_for_university(univ_id uuid)
+returns table (
+  university_id uuid,
+  category_id uuid,
+  gender text,
+  type text,
+  candidate_id uuid,
+  waist_number int,
+  name text,
+  votes int
+)
+language sql
+security definer
+set search_path = public
+as $$
+  -- Only allow execution if caller is an admin of the requested university
+  with me as (
+    select exists (
+      select 1
+      from public.admins a
+      where a.university_id = univ_id
+        and a.password_hash is not null -- table-based admin
+    ) as is_admin
+  )
+  select afr.university_id, afr.category_id, afr.gender, afr.type, afr.candidate_id, afr.waist_number, afr.name, afr.votes
+  from public.admin_full_results afr,
+       me
+  where me.is_admin = true
+    and afr.university_id = univ_id;
+$$;
+
+-- Allow only authenticated to call; we’ll still check admin in the function
+revoke all on function public.get_admin_full_results_for_university(uuid) from public;
+grant execute on function public.get_admin_full_results_for_university(uuid) to authenticated;
+
+/****************************************************
+ OPTIONAL: ADMIN LOGIN RPC (PASSWORD VERIFY)
+****************************************************/
+
+-- Enable pgcrypto for password hashing (run once; safe if already installed)
+create extension if not exists pgcrypto with schema extensions;
+
+-- Secure function to verify an admin's password by university_id
+create or replace function public.admin_verify_password(univ_id uuid, plain_password text)
+returns boolean
+language sql
+security definer
+set search_path = public, extensions
+as $$
+  select coalesce((
+    select a.password_hash = extensions.crypt(plain_password, a.password_hash)
+    from public.admins a
+    where a.university_id = univ_id
+    limit 1
+  ), false);
+$$;
+
+revoke all on function public.admin_verify_password(uuid, text) from public;
+grant execute on function public.admin_verify_password(uuid, text) to authenticated, anon;
+
+-- Make gender check case-insensitive for candidates
+alter table public.candidates drop constraint if exists candidates_gender_check;
+alter table public.candidates add constraint candidates_gender_check
+  check (lower(gender) in ('male','female'));
+
+insert into public.categories (university_id, gender, type, is_active)
+values
+  ('<university_uuid>', 'male',   'king',     true),   -- King (male)
+  ('<university_uuid>', 'female', 'king',     true),   -- Queen (female)
+  ('<university_uuid>', 'male',   'style',    true),   -- Style King
+  ('<university_uuid>', 'female', 'style',    true),   -- Style Queen
+  ('<university_uuid>', 'male',   'popular',  true),   -- Popular King
+  ('<university_uuid>', 'female', 'popular',  true),   -- Popular Queen
+  ('<university_uuid>', 'male',   'innocent', true),   -- Innocent King
+  ('<university_uuid>', 'female', 'innocent', true);   -- Innocent Queen
+
+  -- ... existing code ...
+-- Secure Admin Results: require password before returning data
+create or replace function public.get_admin_full_results_secure(univ_id uuid, plain_password text)
+returns table (
+  university_id uuid,
+  category_id uuid,
+  gender text,
+  type text,
+  candidate_id uuid,
+  waist_number int,
+  name text,
+  votes int
+)
+language sql
+security definer
+set search_path = public, extensions
+as $$
+  with ok as (
+    select public.admin_verify_password(univ_id, plain_password) as allowed
+  )
+  select afr.university_id, afr.category_id, afr.gender, afr.type, afr.candidate_id, afr.waist_number, afr.name, afr.votes
+  from public.admin_full_results afr, ok
+  where ok.allowed = true
+    and afr.university_id = univ_id;
+$$;
+
+revoke all on function public.get_admin_full_results_secure(uuid, text) from public;
+grant execute on function public.get_admin_full_results_secure(uuid, text) to anon, authenticated;
+-- ... existing code ...
