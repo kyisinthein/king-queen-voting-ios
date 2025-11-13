@@ -10,6 +10,7 @@ type CategoryRow = {
   type: string;
   is_active: boolean;
   created_at?: string;
+  display_label?: string;
 };
 
 function getDisplayType(gender: string, type: string): string {
@@ -30,10 +31,11 @@ export default function AdminCategories() {
 
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<CategoryRow | null>(null);
-  const [form, setForm] = useState<{ gender: 'male' | 'female'; type: 'king' | 'style' | 'popular' | 'innocent'; is_active: boolean }>({
+  const [form, setForm] = useState<{ gender: 'male' | 'female'; type: 'king' | 'style' | 'popular' | 'innocent'; is_active: boolean; display_label: string }>({
     gender: 'male',
     type: 'king',
     is_active: true,
+    display_label: 'King', // sensible default; will change by gender/type selection below
   });
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export default function AdminCategories() {
 
   function openCreate() {
     setEditing(null);
-    setForm({ gender: 'male', type: 'king', is_active: true });
+    setForm({ gender: 'male', type: 'king', is_active: true, display_label: 'King' });
     setShowForm(true);
   }
 
@@ -76,6 +78,7 @@ export default function AdminCategories() {
       gender: (cat.gender?.toLowerCase() === 'female' ? 'female' : 'male'),
       type: (['king','style','popular','innocent'].includes(cat.type?.toLowerCase()) ? cat.type.toLowerCase() as any : 'king'),
       is_active: !!cat.is_active,
+      display_label: cat.display_label ?? getDisplayType(cat.gender, cat.type),
     });
     setShowForm(true);
   }
@@ -83,7 +86,7 @@ export default function AdminCategories() {
   async function saveForm() {
     try {
       if (!university_id || !pw) throw new Error('Missing authentication parameters');
-      const { gender, type, is_active } = form;
+      const { gender, type, is_active, display_label } = form;
       const { data, error } = await supabase.rpc('admin_upsert_category_secure', {
         univ_id: university_id,
         plain_password: pw,
@@ -91,6 +94,7 @@ export default function AdminCategories() {
         gender_in: gender,
         type_in: type,
         is_active_in: is_active,
+        display_label_in: display_label,
       });
       if (error) throw error;
       setShowForm(false);
@@ -220,7 +224,7 @@ export default function AdminCategories() {
             >
               <View>
                 <Text style={{ fontSize: 16, fontWeight: '700', color: '#222' }}>
-                  {getDisplayType(item.gender, item.type)}
+                  {item.display_label ?? getDisplayType(item.gender, item.type)}
                 </Text>
                 <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
                   {item.gender?.toLowerCase() === 'female' ? 'Female' : 'Male'}
@@ -259,7 +263,6 @@ export default function AdminCategories() {
             </View>
           )}
         />
-
         {/* Form Modal (inline) */}
         {showForm && (
           <View
@@ -303,7 +306,13 @@ export default function AdminCategories() {
               {(['king','style','popular','innocent'] as const).map(t => (
                 <Pressable
                   key={t}
-                  onPress={() => setForm({ ...form, type: t })}
+                  onPress={() => setForm({
+                    ...form,
+                    type: t,
+                    display_label: (t === 'king'
+                      ? (form.gender === 'female' ? 'Queen' : 'King')
+                      : getDisplayType(form.gender, t)),
+                  })}
                   style={{
                     paddingVertical: 8,
                     paddingHorizontal: 12,
@@ -317,6 +326,15 @@ export default function AdminCategories() {
                 </Pressable>
               ))}
             </View>
+
+            {/* Display label input */}
+            <Text style={{ marginTop: 12, color: '#666' }}>Display label (shown in app)</Text>
+            <TextInput
+              placeholder="e.g., Presentation, Community Choice"
+              value={form.display_label}
+              onChangeText={(v) => setForm({ ...form, display_label: v })}
+              style={{ backgroundColor: '#f5f5f5', borderRadius: 8, padding: 10, marginTop: 8 }}
+            />
 
             {/* Active toggle */}
             <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center', gap: 8 }}>

@@ -1,9 +1,9 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import { Linking, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // NEW
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { FloatingActions } from '../components/floating-actions';
-import { useSafeAreaInsets } from 'react-native-safe-area-context'; // NEW
 
 
 export default function UserGuide() {
@@ -20,15 +20,15 @@ export default function UserGuide() {
         'Every user starts with 8 voting tickets.',
         'You can use 4 tickets in each selection: Male and Female.',
         'Each selection has 4 categories.',
-        'Male: King, Style, Popular, Innocent.',
-        'Female: Queen, Style, Popular, Innocent.',
+        // 'Male: King, Style, Popular, Innocent.',
+        // 'Female: Queen, Style, Popular, Innocent.',
         'Use one ticket per category (total 4 tickets per selection).',
       ],
     },
     {
       title: 'Rules',
       points: [
-        'If you use a ticket for the King category (Male) on one candidate, you cannot use another ticket again in the same category for other male candidates.',
+        'If you use a ticket for a category (Male) on one candidate, you cannot use another ticket again in the same category for other male candidates.',
         'Distribute tickets one per category across the four categories.',
         'Do not use more than one ticket in the same category.',
       ],
@@ -37,7 +37,7 @@ export default function UserGuide() {
       title: 'Example',
       points: [
         'You can use all 4 tickets on a single candidate within one selection.',
-        'Example: For candidate “Mg Mg” (Male), use 4 tickets—one per category (King, Style, Popular, Innocent).',
+        'Example: For candidate “Mg Mg” (Male), use 4 tickets—one per category.',
       ],
     },
   ];
@@ -50,15 +50,15 @@ export default function UserGuide() {
         'အသုံးပြုသူတိုင်းသည် Voting tickets ၈ ခု ရရှိမည်ဖြစ်သည်။',
         'Selection (ကျား၊ မ) တစ်ဦးချင်းစီအတွက် tickets ၄ ခုစီ အသုံးပြုနိုင်သည်။',
         'Selection (ကျား၊ မ) တစ်ခုချင်းစီတွင် အမျိုးအစား ၄ ခု ခွဲခြားထားသည်။',
-        'Selection (ကျား) − King, Style, Popular, Innocent.',
-        'Selection (မ) − Queen, Style, Popular, Innocent.',
+        // 'Selection (ကျား) − King, Style, Popular, Innocent.',
+        // 'Selection (မ) − Queen, Style, Popular, Innocent.',
         'ဖော်ပြပါ အမျိုးအစား ၄ ခုတွင် တစ်ခုချင်းစီအတွက် ticket ၁ ခုစီ အသုံးပြုနိုင်သည်။',
       ],
     },
     {
       title: 'သတိပြုရန်',
       points: [
-        'King category (ကျား) အတွက် ticket ၁ ခု အသုံးပြုပါက အခြားသော (ကျား) candidate များအား King category အတွက် ticket ကို ထပ်မံအသုံးပြု၍မရနိုင်ပါ။',
+        'Category တစ်ခုအတွက် ticket ၁ ခု အသုံးပြုပါက အခြားသော candidate များအား တူညီသော Category အတွက် ticket ကို ထပ်မံအသုံးပြု၍မရနိုင်ပါ။',
         'Category ၄ ခုအတွက် ticket ၁ ခုစီသာ အညီအမျှ အသုံးပြုရမည်။',
         'Category တစ်ခုအတွက် ticket ၁ ထက်ပို၍ အသုံးပြု၍ မရနိုင်ပါ။',
         'သို့သော် Selection တစ်ဦးတည်းအတွက် ticket အားလုံး ( ၄ ခု ) အသုံးပြုချင်လျှင် အသုံးပြုနိုင်သည်။',
@@ -69,7 +69,7 @@ export default function UserGuide() {
       points: [
         
         'ဥပမာ − Mg Mg (ကျား) တစ်ဦးတည်းအား Category ၄ ခုအတွက် ticket ၁ ခုစီ အသုံးပြု၍ စုစုပေါင်း ၄ ခုအထိ အသုံးပြုနိုင်သည်။',
-        'သို့သော် Mg Mg အား King Category အတွက် ticket ၁ ခု အသုံးပြုပြီးပါက အခြားသော Candidate များအား (ဥပမာ − အောင်အောင်၊ ကျော်ကျော်) King Category အတွက် ticket အသုံးပြု၍မရနိုင်တော့ပါ။',
+        'သို့သော် Mg Mg အာ Category တစ်ခု အတွက် ticket ၁ ခု အသုံးပြုပြီးပါက အခြားသော Candidate များအား (ဥပမာ − အောင်အောင်၊ ကျော်ကျော်) အဆိုပါ Category အတွက် ticket အသုံးပြု၍မရနိုင်တော့ပါ။',
       ],
     },
   ];
@@ -183,15 +183,20 @@ export default function UserGuide() {
                     rel: false,
                   }}
                   webViewProps={{
+                    originWhitelist: ['*'],
                     allowsInlineMediaPlayback: true,
                     mediaPlaybackRequiresUserAction: false,
                     allowsFullscreenVideo: true,
+                    onHttpError: (e) => {
+                      console.warn('WebView HTTP error', e.nativeEvent);
+                      setVideoError(true);
+                    },
+                    onError: (e) => {
+                      console.warn('YouTube inline playback error', e);
+                      setVideoError(true);
+                    },
                   }}
                   onReady={() => setVideoError(false)}
-                  onError={(e) => {
-                    console.warn('YouTube inline playback error', e);
-                    setVideoError(true);
-                  }}
                 />
               ) : (
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 }}>

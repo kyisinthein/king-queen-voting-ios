@@ -21,10 +21,12 @@ type Candidate = {
   image_url: string | null;
 };
 
+// Top-level types near the imports
 type Category = {
   id: string;
   type: string;
   gender: string;
+  display_label?: string;
 };
 
 export default function CandidateDetails() {
@@ -64,7 +66,7 @@ export default function CandidateDetails() {
         // Fetch available categories for this candidate's university and gender
         const { data: categoriesData, error: categoriesError } = await supabase
           .from('categories')
-          .select('id, type, gender')
+          .select('id, type, gender, display_label')
           .eq('university_id', data.university_id)
           .ilike('gender', data.gender)
           .eq('is_active', true);
@@ -152,11 +154,15 @@ export default function CandidateDetails() {
   }
 
   function getCategoryDisplayName(type: string): string {
-    // Feel free to rename 'popular' to 'Popular' for UI:
-    switch (type) {
+    const t = String(type).toLowerCase();
+    const match = categories.find(c => String(c.type).toLowerCase() === t);
+    if (match?.display_label) return match.display_label;
+
+    // Fallbacks if no display_label is set
+    switch (t) {
       case 'king': return candidate?.gender.toLowerCase() === 'male' ? 'King' : 'Queen';
-      case 'style': return candidate?.gender.toLowerCase() === 'male' ? 'Style' : 'Style';
-      case 'popular': return 'Popular'; // UI label; DB type stays 'popular'
+      case 'style': return 'Style';
+      case 'popular': return 'Popular';
       case 'innocent': return 'Innocent';
       default: return type;
     }

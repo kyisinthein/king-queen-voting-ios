@@ -118,3 +118,20 @@ join public.universities u on u.id = cat.university_id;
 -- Grants: public can read top results; aggregated can be limited if desired
 grant select on public.public_top_results to anon, authenticated;
 grant select on public.category_results to authenticated;
+
+
+-- Add a nullable display label to categories
+alter table public.categories
+  add column if not exists display_label text;
+
+-- Optional: backfill sensible defaults so UI shows labels immediately
+update public.categories c
+set display_label = case
+  when c.type = 'king' and c.gender = 'male' then 'King'
+  when c.type = 'king' and c.gender = 'female' then 'Queen'
+  when c.type = 'style' then 'Style'
+  when c.type = 'popular' then 'Popular'
+  when c.type = 'innocent' then 'Innocent'
+  else c.display_label
+end
+where c.display_label is null;

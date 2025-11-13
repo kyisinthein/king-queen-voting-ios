@@ -1,3 +1,4 @@
+// Top-level declarations: add display_label and update getCategoryLabel
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
@@ -7,7 +8,7 @@ import { supabase } from '../lib/supabase';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; // NEW
 
 type University = { id: string; name: string };
-type Category = { id: string; university_id: string; gender: string; type: string };
+type Category = { id: string; university_id: string; gender: string; type: string; display_label?: string | null };
 type TopRow = { category_id: string; candidate_id: string; votes: number };
 type Candidate = { id: string; name: string; image_url?: string | null; gender: string };
 
@@ -19,14 +20,9 @@ function formatNumber(n: number | null | undefined) {
   }
 }
 
-function getCategoryLabel(gender: string, type: string): string {
-  const g = gender.toLowerCase();
-  const t = type.toLowerCase();
-  if (t === 'king') return g === 'female' ? 'Queen' : 'King';
-  if (t === 'style') return 'Style';
-  if (t === 'popular') return 'Popular';
-  if (t === 'innocent') return 'Innocent';
-  return type;
+function getCategoryLabel(display_label?: string | null): string {
+  const label = (display_label ?? '').trim();
+  return label;
 }
 
 export default function LiveResults() {
@@ -194,7 +190,7 @@ export default function LiveResults() {
         // Fetch active categories for this university
         const { data: cats, error: catErr } = await supabase
           .from('categories')
-          .select('id, university_id, gender, type')
+          .select('id, university_id, gender, type, display_label')
           .eq('university_id', univId)
           .eq('is_active', true);
         if (catErr) throw new Error(catErr.message);
@@ -395,7 +391,7 @@ export default function LiveResults() {
                   return (
                     <View>
                       <Text style={{ color: 'white', marginBottom: 8, fontWeight: '600', opacity: 0.9 }}>
-                        {getCategoryLabel(item.gender, item.type)} Top value result
+                        {getCategoryLabel(item.display_label) ? `${getCategoryLabel(item.display_label)} Top value result` : 'Top value result'}
                       </Text>
 
                       {/* Result card */}

@@ -2,9 +2,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Pressable, SafeAreaView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // NEW
 import { FloatingActions } from '../../components/floating-actions';
 import { supabase } from '../../lib/supabase';
-import { useSafeAreaInsets } from 'react-native-safe-area-context'; // NEW
 
 
 
@@ -147,7 +147,7 @@ export default function UniversityCandidates() {
       >
         <View style={{ flex: 1, padding: 20, backgroundColor: 'transparent', marginTop: 25 }}>
           <Text style={{ alignSelf: 'center', fontSize: 25, fontWeight: '800', color: 'white', letterSpacing: 0.3 }}>
-            Choose Candidate
+            Choose Your Favorite
           </Text>
           <Text style={{ alignSelf: 'center', marginTop: 13, color: '#FFD700', fontSize: 15, fontWeight: 600 }}>
             {universityName ? `University : ${universityName}` : 'Select a person to view details'}

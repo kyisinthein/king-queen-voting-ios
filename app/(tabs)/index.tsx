@@ -83,7 +83,7 @@ export default function Partners() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-      <View style={{ flex: 1, padding: 20, backgroundColor: 'white' }}>
+      <View style={{ flex: 1, padding: 20, backgroundColor: 'white', marginTop: 20 }}>
         {/* Header */}
         <View style={{ alignItems: 'center', marginBottom: 12 }}>
           <Text
@@ -133,9 +133,9 @@ export default function Partners() {
               ) : (
                 <Text style={{ color: '#777' }}>{presenting[0]?.name}</Text>
               )}
-              <Text style={{ marginTop: 12, color: '#333', fontWeight: '700', textAlign: 'center' }}>
+              {/* <Text style={{ marginTop: 12, color: '#333', fontWeight: '700', textAlign: 'center' }}>
                 {presenting[0]?.name}
-              </Text>
+              </Text> */}
             </View>
           </View>
 

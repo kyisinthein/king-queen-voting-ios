@@ -35,13 +35,15 @@ grant execute on function public.get_admin_full_results_secure(uuid, text) to an
 
 -- List categories for a university (secure by password)
 create or replace function public.admin_list_categories_secure(univ_id uuid, plain_password text)
+-- admin_list_categories_secure: include display_label in return
 returns table (
   id uuid,
   university_id uuid,
   gender text,
   type text,
   is_active boolean,
-  created_at timestamptz
+  created_at timestamptz,
+  display_label text
 )
 language sql
 security definer
@@ -55,7 +57,7 @@ as $$
       limit 1
     ), false) as pass_ok
   )
-  select c.id, c.university_id, c.gender, c.type, c.is_active, c.created_at
+  select c.id, c.university_id, c.gender, c.type, c.is_active, c.created_at, c.display_label
   from public.categories c, ok
   where ok.pass_ok = true
     and c.university_id = univ_id
@@ -72,7 +74,8 @@ create or replace function public.admin_upsert_category_secure(
   category_id uuid,
   gender_in text,
   type_in text,
-  is_active_in boolean
+  is_active_in boolean,
+  display_label_in text
 )
 returns uuid
 language plpgsql
@@ -118,13 +121,14 @@ begin
     limit 1;
 
     if existing_id is null then
-      insert into public.categories (university_id, gender, type, is_active)
-      values (univ_id, normalized_gender, normalized_type, coalesce(is_active_in, true))
+      insert into public.categories (university_id, gender, type, is_active, display_label)
+      values (univ_id, normalized_gender, normalized_type, coalesce(is_active_in, true), display_label_in)
       returning id into new_id;
       return new_id;
     else
       update public.categories
-        set is_active = coalesce(is_active_in, true)
+        set is_active = coalesce(is_active_in, true),
+            display_label = display_label_in
       where id = existing_id;
       return existing_id;
     end if;
@@ -132,7 +136,8 @@ begin
     update public.categories
       set gender = normalized_gender,
           type = normalized_type,
-          is_active = coalesce(is_active_in, true)
+          is_active = coalesce(is_active_in, true),
+          display_label = display_label_in
     where id = category_id
       and university_id = univ_id;
     return category_id;
@@ -140,8 +145,8 @@ begin
 end;
 $func$;
 
-revoke all on function public.admin_upsert_category_secure(uuid, text, uuid, text, text, boolean) from public;
-grant execute on function public.admin_upsert_category_secure(uuid, text, uuid, text, text, boolean) to anon, authenticated;
+revoke all on function public.admin_upsert_category_secure(uuid, text, uuid, text, text, boolean, text) from public;
+grant execute on function public.admin_upsert_category_secure(uuid, text, uuid, text, text, boolean, text) to anon, authenticated;
 
 -- Delete category (restricted to same university)
 create or replace function public.admin_delete_category_secure(univ_id uuid, plain_password text, category_id uuid)

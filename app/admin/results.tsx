@@ -46,6 +46,7 @@ export default function AdminResults() {
   const [error, setError] = useState<string | null>(null);
   const [universityName, setUniversityName] = useState<string>('');
   const [imagesById, setImagesById] = useState<Record<string, string | null>>({});
+  const [labelsByKey, setLabelsByKey] = useState<Record<string, string>>({});
 
   useEffect(() => {
     (async () => {
@@ -73,6 +74,23 @@ export default function AdminResults() {
         if (error) throw error;
 
         setRows((data ?? []) as Row[]);
+
+        // Fetch category display labels for this university
+        const { data: cats, error: catsErr } = await supabase
+          .from('categories')
+          .select('gender, type, display_label')
+          .eq('university_id', university_id)
+          .eq('is_active', true);
+        if (!catsErr && Array.isArray(cats)) {
+          const map: Record<string, string> = {};
+          cats.forEach((c: any) => {
+            const g = String(c.gender).toLowerCase();
+            const t = String(c.type).toLowerCase();
+            const key = `${g}-${t}`;
+            map[key] = c.display_label ?? getDisplayType(g, t);
+          });
+          setLabelsByKey(map);
+        }
       } catch (e: any) {
         setError(e?.message ?? 'Failed to load admin results');
       } finally {
@@ -136,9 +154,10 @@ export default function AdminResults() {
     ];
     const toGroup = (key: string, items: Row[]): CategoryGroup => {
       const [g, t] = key.split('-');
+      const display = labelsByKey[key] ?? getDisplayType(g, t);
       return {
         key,
-        label: `${getDisplayType(g, t)} — ${getGenderLabel(g)}`,
+        label: `${display} Top value result`,
         candidates: items,
       };
     };
@@ -152,7 +171,7 @@ export default function AdminResults() {
       if (!order.includes(k) && it.length > 0) ordered.push(toGroup(k, it));
     }
     return ordered;
-  }, [rows]);
+  }, [rows, labelsByKey]);
 
   const renderCandidateItem = ({ item, index }: { item: Row; index: number }) => {
     const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
