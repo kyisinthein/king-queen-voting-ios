@@ -25,36 +25,7 @@ export default function Sponsors() {
     },
   ];
 
-  // Platinum Sponsors — previously “Champion”
-  const platinum: Sponsor[] = [
-    {
-      name: 'Champion Sponsor 1',
-      tier: 'Platinum',
-      logoUrl: 'https://sys-shop.s3.ap-southeast-1.amazonaws.com/0main/King_Queen/sm.webp',
-      website: null,
-    },
-    {
-      name: 'Champion Sponsor 2',
-      tier: 'Platinum',
-      logoUrl: 'https://sys-shop.s3.ap-southeast-1.amazonaws.com/0main/King_Queen/ww.webp',
-      website: null,
-    },
-  ];
-
-  // Supporting Sponsors — previously “Event”
-  const supporting: Sponsor[] = [
-    {
-      name: 'Supporting Sponsor',
-      tier: 'Supporting',
-      logoUrl: 'https://sys-shop.s3.ap-southeast-1.amazonaws.com/0main/King_Queen/tkhm.webp',
-      website: null,
-    },
-  ];
-
-  function openLink(url?: string | null) {
-    if (!url) return;
-    Linking.openURL(url);
-  }
+  
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
@@ -68,7 +39,7 @@ export default function Sponsors() {
           elevation: 3,
         }}
       /> */}
-      <View style={{ flex: 1, padding: 20, backgroundColor: 'white', marginTop: 20}}>
+      <View style={{ flex: 1, padding: 20, backgroundColor: 'white', marginTop: 40}}>
         {/* Header */}
         <View style={{ alignItems: 'center', marginBottom: 12 }}>
           <Text
@@ -100,7 +71,7 @@ export default function Sponsors() {
               style={{
                 backgroundColor: 'white',
                 borderRadius: 16,
-                paddingVertical: 24,
+                paddingVertical: 30,
                 paddingHorizontal: 20,
                 borderWidth: 1,
                 borderColor: 'rgba(0,0,0,0)',
@@ -110,163 +81,28 @@ export default function Sponsors() {
               {presenting[0]?.logoUrl ? (
                 <Image
                   source={{ uri: presenting[0].logoUrl! }}
-                  style={{ width: '100%', height: 100 }}
+                  style={{ width: '100%', height: 150 }}
                   contentFit="contain"
                 />
               ) : (
                 <Text style={{ color: '#777' }}>{presenting[0]?.name}</Text>
               )}
-              <Text style={{ marginTop: 12, color: '#333', fontWeight: '700', textAlign: 'center' }}>
+              <Text style={{ marginTop: 50, color: '#333', fontWeight: '800', textAlign: 'center' }}>
                 {presenting[0]?.name}
               </Text>
+              <Pressable
+                onPress={() => Linking.openURL('https://seinnyaungso.com/')}
+                style={{ marginTop: 14 }}
+              >
+                <Text style={{ color: '#333', textAlign: 'justify', lineHeight: 20, marginTop: 20 }}>
+                  Seinn Yaung So Manufacturing Co., Ltd. was established as an expansion of 007 Zero Zero Seven Trading Co., Ltd., which has been operating in Myanmar since 1989. With over three decades of experience, we have grown to become one of the leading suppliers of agricultural machinery in the Myanmar market. Our operations span distribution, wholesale, aftersales service, and spare parts support nationwide.
+                </Text>
+                <Text style={{ color: '#1e90ff', textAlign: 'center', marginTop: 30 }}>seinnyaungso.com</Text>
+              </Pressable>
             </View>
           </View>
 
-          {/* Platinum Sponsors */}
-          <View style={{ marginBottom: 24 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', columnGap: 8, marginBottom: 10 }}>
-              <View style={{ flex: 1, height: 1, backgroundColor: '#1e90ff' }} />
-              <Text style={{ color: '#1e90ff', fontSize: 14, fontWeight: '800' }}>PLATINUM SPONSORS</Text>
-              <View style={{ flex: 1, height: 1, backgroundColor: '#1e90ff' }} />
-            </View>
-            <View
-              style={{
-                backgroundColor: 'white',
-                borderRadius: 16,
-                padding: 12,
-                borderWidth: 1,
-                borderColor: 'rgba(0,0,0,0)',
-              }}
-            >
-              {platinum.length === 2 ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                  <Pressable
-                    key={`plat-${platinum[0].name}`}
-                    onPress={() => openLink(platinum[0].website)}
-                    style={{
-                      width: '45%',
-                      minHeight: 100,
-                      backgroundColor: 'white',
-                      borderRadius: 12,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: 8,
-                      borderWidth: 1,
-                      borderColor: 'rgba(0,0,0,0)',
-                    }}
-                  >
-                    {platinum[0].logoUrl ? (
-                      <Image source={{ uri: platinum[0].logoUrl }} style={{ width: '100%', height: 100 }} contentFit="contain" />
-                    ) : (
-                      <Text style={{ color: '#333', fontWeight: '700' }}>{platinum[0].name}</Text>
-                    )}
-                  </Pressable>
-
-                  {/* Vertical divider between the two images */}
-                  <View
-                    style={{
-                      width: 1,
-                      alignSelf: 'stretch',
-                      backgroundColor: '#a6cdf4ff',
-                      marginHorizontal: 8,
-                    }}
-                  />
-
-                  <Pressable
-                    key={`plat-${platinum[1].name}`}
-                    onPress={() => openLink(platinum[1].website)}
-                    style={{
-                      width: '45%',
-                      minHeight: 100,
-                      backgroundColor: 'white',
-                      borderRadius: 12,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: 8,
-                      borderWidth: 1,
-                      borderColor: 'rgba(0,0,0,0)',
-                    }}
-                  >
-                    {platinum[1].logoUrl ? (
-                      <Image source={{ uri: platinum[1].logoUrl }} style={{ width: '100%', height: 100 }} contentFit="contain" />
-                    ) : (
-                      <Text style={{ color: '#333', fontWeight: '700' }}>{platinum[1].name}</Text>
-                    )}
-                  </Pressable>
-                </View>
-              ) : (
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', columnGap: 12, rowGap: 12 }}>
-                  {platinum.map((s) => (
-                    <Pressable
-                      key={`plat-${s.name}`}
-                      onPress={() => openLink(s.website)}
-                      style={{
-                        width: '45%',
-                        minHeight: 100,
-                        backgroundColor: 'white',
-                        borderRadius: 12,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: 8,
-                        borderWidth: 1,
-                        borderColor: 'rgba(0,0,0,0.08)',
-                      }}
-                    >
-                      {s.logoUrl ? (
-                        <Image source={{ uri: s.logoUrl }} style={{ width: '100%', height: 100 }} contentFit="contain" />
-                      ) : (
-                        <Text style={{ color: '#333', fontWeight: '700' }}>{s.name}</Text>
-                      )}
-                    </Pressable>
-                  ))}
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* Supporting Sponsors */}
-          <View style={{ marginBottom: 24 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', columnGap: 8, marginBottom: 10 }}>
-              <View style={{ flex: 1, height: 1, backgroundColor: '#1e90ff' }} />
-              <Text style={{ color: '#1e90ff', fontSize: 14, fontWeight: '800' }}>SUPPORTING SPONSORS</Text>
-              <View style={{ flex: 1, height: 1, backgroundColor: '#1e90ff' }} />
-            </View>
-            <View
-              style={{
-                backgroundColor: 'white',
-                borderRadius: 16,
-                padding: 12,
-                borderWidth: 1,
-                borderColor: 'rgba(0,0,0,0)',
-              }}
-            >
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', columnGap: 12, rowGap: 12 }}>
-                {supporting.map((s) => (
-                  <Pressable
-                    key={`supp-${s.name}`}
-                    onPress={() => openLink(s.website)}
-                    style={{
-                      width: '45%',
-                      minHeight: 100,
-                      backgroundColor: 'white',
-                      borderRadius: 12,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: 8,
-                      borderWidth: 1,
-                      borderColor: 'rgba(0,0,0,0)',
-                    }}
-                  >
-                    {s.logoUrl ? (
-                      <Image source={{ uri: s.logoUrl }} style={{ width: '100%', height: 150 }} contentFit="contain" />
-                    ) : (
-                      <Text style={{ color: '#333', fontWeight: '700' }}>{s.name}</Text>
-                    )}
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-          </View>
+          
 
           {/* CTA: Become a sponsor */}
           {/* <View style={{ marginTop: 4, alignItems: 'center' }}>

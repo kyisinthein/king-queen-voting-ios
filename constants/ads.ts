@@ -1,0 +1,2 @@
+export const IOS_ADMOB_APP_ID = 'ca-app-pub-6368412009992703~9039539777';
+export const BANNER_AD_UNIT_ID = 'ca-app-pub-6368412009992703/4402075167';

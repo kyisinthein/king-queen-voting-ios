@@ -1,8 +1,10 @@
+import { BANNER_AD_UNIT_ID } from '@/constants/ads';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import { Linking, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
-import { FloatingActions } from '../components/floating-actions';
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FloatingActions } from '../components/floating-actions';
 
 export default function About() {
   const cards = [
@@ -381,6 +383,9 @@ export default function About() {
             </ScrollView>
             {/* Floating actions — render inside the container so it shows */}
             <FloatingActions style={{ position: 'absolute', right: 12, bottom: 24 }} />
+          </View>
+          <View style={{ position: 'absolute', left: 0, right: 0, bottom: insets.bottom, alignItems: 'center' }}>
+            <BannerAd unitId={BANNER_AD_UNIT_ID} size={BannerAdSize.BANNER} />
           </View>
         </LinearGradient>
       </SafeAreaView>

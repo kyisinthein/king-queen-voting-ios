@@ -1,5 +1,7 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+import mobileAds from 'react-native-google-mobile-ads';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -11,12 +13,14 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  useEffect(() => {
+    mobileAds().initialize();
+  }, []);
 
   return (
     <SafeAreaProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        // Hide headers to remove the white section on these pages
         <Stack.Screen name="candidate/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="university/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="sponsors" options={{ headerShown: false }} />

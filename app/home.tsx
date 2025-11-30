@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, SafeAreaView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; // NEW
 import { supabase } from '../lib/supabase';
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { BANNER_AD_UNIT_ID } from '@/constants/ads';
 
 type University = {
   id: string;
@@ -204,6 +206,9 @@ export default function Home() {
 
         {/* Floating actions button (gear) */}
         <FloatingActions />
+        <View style={{ position: 'absolute', left: 0, right: 0, bottom: insets.bottom, alignItems: 'center' }}>
+          <BannerAd unitId={BANNER_AD_UNIT_ID} size={BannerAdSize.BANNER} />
+        </View>
       </LinearGradient>
     </SafeAreaView>
   );
