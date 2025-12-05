@@ -56,7 +56,7 @@ export default function Partners() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient colors={["#f7faff", "#ffffff"]} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={{ flex: 1 }}>
-      <View style={{ flex: 1, padding: 20, marginTop: 95 }}>
+      <View style={{ flex: 1, padding: 20, marginTop: 70 }}>
         {/* Header */}
         <View style={{ alignItems: 'center', marginBottom: 12 }}>
           <Text

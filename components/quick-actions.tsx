@@ -8,6 +8,7 @@ const ACTIONS: Action[] = [
   { label: 'Home',       icon: 'house.fill',        href: '/home' },
   { label: 'Sponsors',   icon: 'star.fill',         href: '/sponsors' },
   { label: 'User Guide', icon: 'book.fill',         href: '/guide' },
+  { label: 'My Votes',   icon: 'checkmark.circle.fill', href: '/my-votes' },
   { label: 'Live Results', icon: 'chart.bar.fill',  href: '/results' },
   { label: 'About us',   icon: 'info.circle.fill',  href: '/about' },
   { label: 'Admin',      icon: 'lock.fill',         href: '/admin/login' },
@@ -51,8 +52,8 @@ export function QuickActions({ visible, onClose }: { visible: boolean; onClose: 
                   borderWidth: 1,
                   borderColor: 'transparent',
                 }}>
-                <IconSymbol name={a.icon as any} color="#333" size={22} />
-                <Text style={{ marginTop: 6, fontWeight: '600' }}>{a.label}</Text>
+                <IconSymbol name={a.icon as any} color={a.label === 'Sponsors' ? '#FF0000' : '#333'} size={22} />
+                <Text style={{ marginTop: 6, fontWeight: '600', color: a.label === 'Sponsors' ? '#FF0000' : '#333' }}>{a.label}</Text>
               </Pressable>
             ))}
           </View>

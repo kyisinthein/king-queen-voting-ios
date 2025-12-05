@@ -132,3 +132,45 @@ $$;
 
 revoke all on function public.get_device_ticket_usage(uuid, text) from public;
 grant execute on function public.get_device_ticket_usage(uuid, text) to anon, authenticated;
+
+-- Device vote history for a university
+drop function if exists public.get_device_votes(uuid, text);
+
+create or replace function public.get_device_votes(univ_id uuid, p_device_id text)
+returns table (
+  category_id uuid,
+  category_gender text,
+  category_type text,
+  category_display_label text,
+  candidate_id uuid,
+  candidate_name text,
+  candidate_gender text,
+  candidate_waist_number int,
+  candidate_image_url text,
+  voted_at timestamptz
+)
+language sql
+security definer
+set search_path = public, extensions
+as $$
+  select
+    v.category_id,
+    c.gender as category_gender,
+    c.type as category_type,
+    c.display_label as category_display_label,
+    v.candidate_id,
+    cand.name as candidate_name,
+    cand.gender as candidate_gender,
+    cand.waist_number as candidate_waist_number,
+    cand.image_url as candidate_image_url,
+    v.created_at as voted_at
+  from public.votes v
+  join public.categories c on c.id = v.category_id
+  join public.candidates cand on cand.id = v.candidate_id
+  where v.university_id = univ_id
+    and v.device_id = p_device_id
+  order by v.created_at desc
+$$;
+
+revoke all on function public.get_device_votes(uuid, text) from public;
+grant execute on function public.get_device_votes(uuid, text) to anon, authenticated;

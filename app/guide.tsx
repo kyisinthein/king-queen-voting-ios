@@ -1,8 +1,8 @@
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import { Linking, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; // NEW
-import YoutubePlayer from 'react-native-youtube-iframe';
 import { FloatingActions } from '../components/floating-actions';
 
 
@@ -10,7 +10,6 @@ export default function UserGuide() {
   // Language toggle: ENG or MM
   const insets = useSafeAreaInsets(); // NEW: define safe-area insets
   const [lang, setLang] = useState<'ENG' | 'MM'>('MM');
-  const [videoError, setVideoError] = useState(false);
 
   // English content (translated from your Burmese text)
   const engSections = [
@@ -157,66 +156,16 @@ export default function UserGuide() {
               </Pressable>
             </View>
 
-            {/* YouTube Video Section */}
-            <View
-              style={{
-                backgroundColor: 'white',
-                borderRadius: 0,
-                overflow: 'hidden',
-                marginBottom: 14,
-                borderWidth: 1,
-                borderColor: 'rgba(0,0,0,0.06)',
-                shadowColor: '#000',
-                shadowOpacity: 0.08,
-                shadowRadius: 10,
-                shadowOffset: { width: 0, height: 6 },
-              }}
+            <Pressable
+              onPress={() => Linking.openURL('https://youtu.be/dp7FlCEvCXY?si=EOp6ghAJeDSCZqW3')}
+              style={{ marginBottom: 14 }}
             >
-              {!videoError ? (
-                <YoutubePlayer
-                  height={190}
-                  play={false}
-                  videoId="dp7FlCEvCXY"
-                  initialPlayerParams={{
-                    controls: true,
-                    modestbranding: true,
-                    rel: false,
-                  }}
-                  webViewProps={{
-                    originWhitelist: ['*'],
-                    allowsInlineMediaPlayback: true,
-                    mediaPlaybackRequiresUserAction: false,
-                    allowsFullscreenVideo: true,
-                    onHttpError: (e) => {
-                      console.warn('WebView HTTP error', e.nativeEvent);
-                      setVideoError(true);
-                    },
-                    onError: (e) => {
-                      console.warn('YouTube inline playback error', e);
-                      setVideoError(true);
-                    },
-                  }}
-                  onReady={() => setVideoError(false)}
-                />
-              ) : (
-                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-                  <Text style={{ color: '#333', textAlign: 'center', marginBottom: 10 }}>
-                    Unable to play inline. Open in YouTube.
-                  </Text>
-                  <Pressable
-                    onPress={() => Linking.openURL('https://youtu.be/dp7FlCEvCXY')}
-                    style={{
-                      paddingVertical: 10,
-                      paddingHorizontal: 16,
-                      borderRadius: 16,
-                      backgroundColor: 'rgba(0,0,0,0.06)',
-                    }}
-                  >
-                    <Text style={{ color: '#222', fontWeight: '700' }}>Watch on YouTube</Text>
-                  </Pressable>
-                </View>
-              )}
-            </View>
+              <Image
+                source={{ uri: 'https://sys-shop.s3.ap-southeast-1.amazonaws.com/0main/King_Queen/WatchonYouTube.png' }}
+                style={{ width: '60%', aspectRatio: 2.7, alignSelf: 'center' }}
+                contentFit="contain"
+              />
+            </Pressable>
 
             {/* Sections */}
             <View style={{ rowGap: 14 }}>
