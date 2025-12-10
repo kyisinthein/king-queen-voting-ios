@@ -49,15 +49,15 @@ export default function UserGuide() {
         'အသုံးပြုသူတိုင်းသည် Voting tickets ၈ ခု ရရှိမည်ဖြစ်သည်။',
         'Selection (ကျား၊ မ) တစ်ဦးချင်းစီအတွက် tickets ၄ ခုစီ အသုံးပြုနိုင်သည်။',
         'Selection (ကျား၊ မ) တစ်ခုချင်းစီတွင် အမျိုးအစား ၄ ခု ခွဲခြားထားသည်။',
-        // 'Selection (ကျား) − King, Style, Popular, Innocent.',
-        // 'Selection (မ) − Queen, Style, Popular, Innocent.',
+        'Selection (ကျား) − King, Style, Popular, Innocent.',
+        'Selection (မ) − Queen, Style, Popular, Innocent.',
         'ဖော်ပြပါ အမျိုးအစား ၄ ခုတွင် တစ်ခုချင်းစီအတွက် ticket ၁ ခုစီ အသုံးပြုနိုင်သည်။',
       ],
     },
     {
       title: 'သတိပြုရန်',
       points: [
-        'Category တစ်ခုအတွက် ticket ၁ ခု အသုံးပြုပါက အခြားသော candidate များအား တူညီသော Category အတွက် ticket ကို ထပ်မံအသုံးပြု၍မရနိုင်ပါ။',
+        'King category (ကျား) အတွက် ticket ၁ ခု အသုံးပြုပါက အခြားသော (ကျား) candidate များအား King category အတွက် ticket ကို ထပ်မံအသုံးပြု၍မရနိုင်ပါ။',
         'Category ၄ ခုအတွက် ticket ၁ ခုစီသာ အညီအမျှ အသုံးပြုရမည်။',
         'Category တစ်ခုအတွက် ticket ၁ ထက်ပို၍ အသုံးပြု၍ မရနိုင်ပါ။',
         'သို့သော် Selection တစ်ဦးတည်းအတွက် ticket အားလုံး ( ၄ ခု ) အသုံးပြုချင်လျှင် အသုံးပြုနိုင်သည်။',
@@ -68,7 +68,7 @@ export default function UserGuide() {
       points: [
         
         'ဥပမာ − Mg Mg (ကျား) တစ်ဦးတည်းအား Category ၄ ခုအတွက် ticket ၁ ခုစီ အသုံးပြု၍ စုစုပေါင်း ၄ ခုအထိ အသုံးပြုနိုင်သည်။',
-        'သို့သော် Mg Mg အာ Category တစ်ခု အတွက် ticket ၁ ခု အသုံးပြုပြီးပါက အခြားသော Candidate များအား (ဥပမာ − အောင်အောင်၊ ကျော်ကျော်) အဆိုပါ Category အတွက် ticket အသုံးပြု၍မရနိုင်တော့ပါ။',
+        'သို့သော် Mg Mg အား King Category အတွက် ticket ၁ ခု အသုံးပြုပြီးပါက အခြားသော Candidate များအား (ဥပမာ − အောင်အောင်၊ ကျော်ကျော်) King Category အတွက် ticket အသုံးပြု၍မရနိုင်တော့ပါ။',
       ],
     },
   ];

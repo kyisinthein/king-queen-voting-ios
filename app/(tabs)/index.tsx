@@ -15,8 +15,8 @@ type Partner = {
 };
 
 export default function Partners() {
-  // Auto-navigate to Home after 5 seconds
-  const [remaining, setRemaining] = React.useState(6);
+  // Auto-navigate to Home after 4 seconds
+  const [remaining, setRemaining] = React.useState(4);
   const progress = React.useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
@@ -26,13 +26,13 @@ export default function Partners() {
 
     Animated.timing(progress, {
       toValue: 1,
-      duration: 6000,
+      duration: 4000,
       useNativeDriver: false,
     }).start();
 
     const t = setTimeout(() => {
       router.replace('/home');
-    }, 6000);
+    }, 4000);
 
     return () => {
       clearInterval(countdown);
@@ -56,7 +56,7 @@ export default function Partners() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient colors={["#f7faff", "#ffffff"]} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={{ flex: 1 }}>
-      <View style={{ flex: 1, padding: 20, marginTop: 70 }}>
+      <View style={{ flex: 1, padding: 20, marginTop: 60 }}>
         {/* Header */}
         <View style={{ alignItems: 'center', marginBottom: 12 }}>
           <Text
@@ -68,7 +68,7 @@ export default function Partners() {
               letterSpacing: 0.3,
             }}
           >
-            Our Partners
+            Our Partner
           </Text>
           {/* <Text style={{ marginTop: 6, color: '#555', textAlign: 'center' }}>
             Huge thanks to our partners who make this possible.
@@ -80,9 +80,9 @@ export default function Partners() {
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
           {/* Presenting Sponsor */}
           <View style={{ marginBottom: 24, marginTop: 30 }}>
-            <View style={{ alignSelf: 'center', backgroundColor: '#eaf2ff', paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, marginBottom: 10, marginTop: 10 }}>
+            {/* <View style={{ alignSelf: 'center', backgroundColor: '#eaf2ff', paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, marginBottom: 10, marginTop: 10 }}>
               <Text style={{ color: '#1e90ff', fontSize: 13, fontWeight: '800' }}>PRESENTED BY</Text>
-            </View>
+            </View> */}
 
             <View
               style={{
@@ -110,7 +110,7 @@ export default function Partners() {
               ) : (
                 <Text style={{ color: '#777' }}>{presenting[0]?.name}</Text>
               )}
-              <Text style={{ marginTop: 50, color: '#222', fontWeight: '800', textAlign: 'center' }}>
+              <Text style={{ marginTop: 90, color: '#222', fontWeight: '800', textAlign: 'center' }}>
                 {presenting[0]?.name}
               </Text>
               <Pressable onPress={() => Linking.openURL('https://seinnyaungso.com/')} style={{ marginTop: 50 }}>

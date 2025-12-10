@@ -1,5 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
@@ -101,6 +102,20 @@ export default function AdminDashboard() {
       pathname: '/admin/export',
       params: { university_id, pw },
     });
+  }
+
+  // Grant Lucky Spin credits (+5) by updating SecureStore used by Lucky Spin page
+  const CREDITS_KEY = 'lucky_spin_credits_v2';
+  async function grantSpins(amount: number = 5) {
+    try {
+      const v = await SecureStore.getItemAsync(CREDITS_KEY);
+      const curr = v ? Number(v) || 0 : 0;
+      const next = curr + amount;
+      await SecureStore.setItemAsync(CREDITS_KEY, String(next));
+      Alert.alert('Success', `Added +${amount} spins. New chances: ${next}.`);
+    } catch (e: any) {
+      Alert.alert('Error', e?.message ?? 'Failed to grant spins');
+    }
   }
 
   function handleLogout() {
@@ -221,12 +236,26 @@ export default function AdminDashboard() {
               icon="🏆"
               color="#51cf66"
             />
-            <StatCard
-              title="Status"
-              value={stats?.votingStatus === 'active' ? 'Active' : 'Inactive'}
-              icon={stats?.votingStatus === 'active' ? '🟢' : '🔴'}
-              color="#ffd43b"
-            />
+            <Pressable
+              onPress={() => grantSpins(5)}
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: 12,
+                padding: 16,
+                flex: 1,
+                minWidth: 140,
+                borderLeftWidth: 4,
+                borderLeftColor: '#ffd43b',
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                <Text style={{ fontSize: 20, marginRight: 8 }}>🎁</Text>
+                <Text style={{ fontSize: 14, color: 'rgba(255, 255, 255, 0.8)', fontWeight: '500' }}>
+                  Grant +5 Spins
+                </Text>
+              </View>
+              <Text style={{ fontSize: 24, fontWeight: '700', color: 'white' }}></Text>
+            </Pressable>
           </View>
         </View>
 

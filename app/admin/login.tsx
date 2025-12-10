@@ -3,11 +3,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 
 type University = { id: string; name: string };
 
 export default function AdminLogin() {
+  const insets = useSafeAreaInsets();
   const [universities, setUniversities] = useState<University[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [password, setPassword] = useState('');
@@ -64,6 +66,14 @@ export default function AdminLogin() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
+      <View
+        pointerEvents="none"
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: insets.top, backgroundColor: '#538df8ff' }}
+      />
+      <View
+        pointerEvents="none"
+        style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: insets.bottom, backgroundColor: '#5B3DB5' }}
+      />
       <LinearGradient
         colors={['#538df8ff', '#5B3DB5', '#5B3DB5']}
         start={{ x: 0, y: 0 }}

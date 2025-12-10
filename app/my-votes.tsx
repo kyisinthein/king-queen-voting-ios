@@ -27,6 +27,7 @@ export default function MyVotes() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [votes, setVotes] = useState<MyVote[]>([]);
+  const [ticketsLeftTotal, setTicketsLeftTotal] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -73,6 +74,23 @@ export default function MyVotes() {
     })();
   }, [selectedUniversityId]);
 
+  useEffect(() => {
+    (async () => {
+      if (!selectedUniversityId) return;
+      try {
+        const deviceId = await getDeviceId();
+        const { data, error } = await supabase.rpc('get_device_ticket_usage', {
+          univ_id: selectedUniversityId,
+          p_device_id: deviceId,
+        });
+        if (error) return;
+        const rows = Array.isArray(data) ? (data as any[]) : [];
+        const total = rows.reduce((sum, r) => sum + (Number(r?.remaining_tickets) || 0), 0);
+        setTicketsLeftTotal(total);
+      } catch {}
+    })();
+  }, [selectedUniversityId]);
+
   const selectedUniversityName = useMemo(() => {
     const found = universities.find(u => u.id === selectedUniversityId);
     return found?.name ?? '';
@@ -93,8 +111,24 @@ export default function MyVotes() {
           contentContainerStyle={{ paddingHorizontal: 20, paddingTop: insets.top + 10, paddingBottom: 96 + insets.bottom }}
         >
           <View style={{ alignItems: 'center', marginTop: -10 }}>
-            <Text style={{ fontSize: 24, fontWeight: '800', color: 'white' }}>My Votes</Text>
-            <Text style={{ marginTop: 10, color: 'rgba(255,255,255,0.85)' }}>{selectedUniversityName}</Text>
+            <Text style={{ fontSize: 30, fontWeight: '800', color: 'white' }}>My Votes</Text>
+            {/* <Text style={{ marginTop: 10, color: 'rgba(255,255,255,0.85)' }}>{selectedUniversityName}</Text> */}
+            {typeof ticketsLeftTotal === 'number' && (
+              <View style={{ marginTop: 12, alignSelf: 'center' }}>
+                <View
+                  style={{
+                    paddingVertical: 6,
+                    paddingHorizontal: 12,
+                    borderRadius: 16,
+                    backgroundColor: 'rgba(255,255,255,0)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0)',
+                  }}
+                >
+                  <Text style={{ color: 'white', fontWeight: '700' }}>Tickets left: {ticketsLeftTotal}</Text>
+                </View>
+              </View>
+            )}
           </View>
 
           {/* University selector */}

@@ -5,7 +5,7 @@
   "expo": {
     "name": "K-Q Vote",
     "slug": "k-q-vote-ios",
-    "version": "1.0.1",
+    "version": "1.0.3",
     "scheme": "kqvoteios",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -17,7 +17,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.workifyorg.kqvote",
-      "buildNumber": "8",
+      "buildNumber": "11",
       "supportsTablet": false,
       "infoPlist": {
         "GADApplicationIdentifier": "ca-app-pub-6368412009992703~9039539777",

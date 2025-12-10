@@ -587,7 +587,7 @@ export default function CandidateDetails() {
               <Text style={{ fontSize: 20, fontWeight: '700', textAlign: 'center', marginBottom: 4 }}>
                 Select Category
               </Text>
-              <Text style={{ textAlign: 'center', color: '#888', marginBottom: 24 }}>
+              <Text style={{ textAlign: 'center', color: '#888', marginBottom: 24, marginTop: 10 }}>
                 Tickets left: {ticketsLeft ?? '...'}
               </Text>
               
