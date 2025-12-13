@@ -1,8 +1,10 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
 import { AdEventType, InterstitialAd, RewardedAd, RewardedAdEventType } from 'react-native-google-mobile-ads';
+import { supabase } from '../lib/supabase';
 
 type Action = { label: string; icon: string; href: string };
 
@@ -11,6 +13,7 @@ const ACTIONS: Action[] = [
   { label: 'List',       icon: 'list.bullet',       href: '/university/[id]' },
   { label: 'Live Results', icon: 'chart.bar.fill',  href: '/results' },
   { label: 'My Votes',   icon: 'checkmark.circle.fill', href: '/my-votes' },
+  { label: 'Messages',   icon: 'message.fill',      href: '/messages' },
     { label: 'About us',   icon: 'info.circle.fill',  href: '/about' },
     { label: 'User Guide', icon: 'book.fill',         href: '/guide' },
   { label: 'Sponsors',   icon: 'star.fill',         href: '/sponsors' },
@@ -18,6 +21,7 @@ const ACTIONS: Action[] = [
 ];
 
 export function QuickActions({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const MESSAGES_LAST_SEEN_KEY = 'messages_last_seen_ts_v1';
   const interstitialUnitId = 'ca-app-pub-6368412009992703/4737038504';
   const rewardedUnitId = 'ca-app-pub-6368412009992703/1944080558';
   const interstitial = useMemo(
@@ -32,6 +36,43 @@ export function QuickActions({ visible, onClose }: { visible: boolean; onClose: 
   const pendingMyVotesNavRef = useRef(false);
   const [rewardLoaded, setRewardLoaded] = useState(false);
   const pendingRewardShowRef = useRef(false);
+  const [hasUnread, setHasUnread] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  useEffect(() => {
+    (async () => {
+      if (!visible) return;
+      try {
+        const { data } = await supabase
+          .from('messages')
+          .select('created_at')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        const latestIso = (data ?? [])[0]?.created_at as string | undefined;
+        if (!latestIso) {
+          setHasUnread(false);
+          setUnreadCount(0);
+          return;
+        }
+        const latestTs = new Date(latestIso).getTime();
+        const stored = await SecureStore.getItemAsync(MESSAGES_LAST_SEEN_KEY);
+        const seenTs = stored ? Number(stored) || 0 : 0;
+        const has = latestTs > seenTs;
+        setHasUnread(has);
+        const seenIso = new Date(seenTs || 0).toISOString();
+        const { count } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_active', true)
+          .gt('created_at', seenIso);
+        setUnreadCount(count ?? 0);
+      } catch {
+        setHasUnread(false);
+        setUnreadCount(0);
+      }
+    })();
+  }, [visible]);
 
   useEffect(() => {
     const unsubLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
@@ -159,6 +200,26 @@ export function QuickActions({ visible, onClose }: { visible: boolean; onClose: 
                   color={a.label === 'Sponsors' ? '#FF0000' : a.label === 'ကံစမ်းရန်' ? '#0A7E4A' : '#333'}
                   size={22}
                 />
+                {a.label === 'Messages' && hasUnread && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 6,
+                      right: 16,
+                      minWidth: 18,
+                      height: 18,
+                      paddingHorizontal: 4,
+                      borderRadius: 9,
+                      backgroundColor: '#FF3B30',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 11, fontWeight: '800' }}>
+                      {unreadCount > 99 ? '99+' : String(unreadCount)}
+                    </Text>
+                  </View>
+                )}
                 <Text
                   style={{
                     marginTop: 6,

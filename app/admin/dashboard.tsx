@@ -106,12 +106,17 @@ export default function AdminDashboard() {
 
   // Grant Lucky Spin credits (+5) by updating SecureStore used by Lucky Spin page
   const CREDITS_KEY = 'lucky_spin_credits_v2';
+  const ADMIN_BONUS_KEY = 'lucky_spin_admin_bonus_v1';
   async function grantSpins(amount: number = 5) {
     try {
       const v = await SecureStore.getItemAsync(CREDITS_KEY);
       const curr = v ? Number(v) || 0 : 0;
       const next = curr + amount;
       await SecureStore.setItemAsync(CREDITS_KEY, String(next));
+      const b = await SecureStore.getItemAsync(ADMIN_BONUS_KEY);
+      const currBonus = b ? Number(b) || 0 : 0;
+      const nextBonus = currBonus + amount;
+      await SecureStore.setItemAsync(ADMIN_BONUS_KEY, String(nextBonus));
       Alert.alert('Success', `Added +${amount} spins. New chances: ${next}.`);
     } catch (e: any) {
       Alert.alert('Error', e?.message ?? 'Failed to grant spins');

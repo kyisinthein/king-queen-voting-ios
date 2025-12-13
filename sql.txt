@@ -355,7 +355,32 @@ values
   ('<university_uuid>', 'male',   'innocent', true),   -- Innocent King
   ('<university_uuid>', 'female', 'innocent', true);   -- Innocent Queen
 
-  -- ... existing code ...
+-- ... existing code ...
+
+/****************************************************
+ Messages (Announcements)
+****************************************************/
+
+create table if not exists public.messages (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  body text not null,
+  image_url text,
+  link_url text,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table public.messages enable row level security;
+
+drop policy if exists "public read active messages" on public.messages;
+create policy "public read active messages"
+on public.messages for select
+to anon, authenticated
+using (is_active = true);
+
+create index if not exists messages_created_at_idx on public.messages (created_at desc);
+
 -- Secure Admin Results: require password before returning data
 create or replace function public.get_admin_full_results_secure(univ_id uuid, plain_password text)
 returns table (

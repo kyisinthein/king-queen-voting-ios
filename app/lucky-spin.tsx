@@ -14,6 +14,7 @@ const REWARD_BUNDLE = 3;
 const rewardedUnitId = 'ca-app-pub-6368412009992703/1944080558';
 const SPIN_COUNT_KEY = 'lucky_spin_count_v1';
 const HISTORY_KEY = 'lucky_spin_history_v1';
+const ADMIN_BONUS_KEY = 'lucky_spin_admin_bonus_v1';
 
 export default function LuckySpin() {
   const spinAnim = React.useRef(new Animated.Value(0)).current;
@@ -32,6 +33,7 @@ export default function LuckySpin() {
   const rewarded = React.useRef(RewardedAd.createForAdRequest(rewardedUnitId, { requestNonPersonalizedAdsOnly: true })).current;
   const [rewardReady, setRewardReady] = React.useState(false);
   const [askingAd, setAskingAd] = React.useState(false);
+  const [adminBonus, setAdminBonus] = React.useState<number>(0);
 
   const prizeValue = (label: string) => {
     if (label === 'Try Again') return 0;
@@ -101,10 +103,27 @@ export default function LuckySpin() {
     } catch {}
   }
 
+  async function loadAdminBonus() {
+    try {
+      const v = await SecureStore.getItemAsync(ADMIN_BONUS_KEY);
+      setAdminBonus(v ? Number(v) || 0 : 0);
+    } catch {
+      setAdminBonus(0);
+    }
+  }
+
+  async function saveAdminBonus(next: number) {
+    setAdminBonus(next);
+    try {
+      await SecureStore.setItemAsync(ADMIN_BONUS_KEY, String(next));
+    } catch {}
+  }
+
   useEffect(() => {
     loadCredits();
     loadSpinCount();
     loadHistory();
+    loadAdminBonus();
     const l = rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => setRewardReady(true));
     const e = rewarded.addAdEventListener(RewardedAdEventType.EARNED_REWARD, async () => {
       setAskingAd(false);
@@ -148,10 +167,13 @@ export default function LuckySpin() {
     const fiftyKsIdx = SEGMENTS.indexOf('50 Ks');
     const fiveHundredKsIdx = SEGMENTS.indexOf('500 Ks');
     const fiveThousandKsIdx = SEGMENTS.indexOf('5000 Ks');
-    const is50KsSpin = nextCount === 2 || nextCount === 6 || nextCount === 11 || nextCount === 25 || nextCount === 50 || nextCount === 60 || nextCount === 100;
-    const idx = nextCount === 1000 && fiveThousandKsIdx >= 0
+    const useAdmin = adminBonus > 0;
+    const is50KsSpin = nextCount === 2 || nextCount === 6 || nextCount === 110 || nextCount === 100;
+    const idx = useAdmin && fiveHundredKsIdx >= 0
+      ? fiveHundredKsIdx
+      : nextCount === 1000 && fiveThousandKsIdx >= 0
       ? fiveThousandKsIdx
-      : (nextCount === 500 || nextCount === 90) && fiveHundredKsIdx >= 0
+      : nextCount === 500 && fiveHundredKsIdx >= 0
       ? fiveHundredKsIdx
       : is50KsSpin && fiftyKsIdx >= 0
       ? fiftyKsIdx
@@ -163,6 +185,7 @@ export default function LuckySpin() {
     spinAnim.setValue(0);
     setSpinning(true);
     await saveCredits(credits - 1);
+    if (useAdmin) await saveAdminBonus(adminBonus - 1);
     await saveSpinCount(nextCount);
     Animated.timing(spinAnim, { toValue: 1, duration: 3000, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start(() => {
       setSpinning(false);
@@ -345,12 +368,20 @@ export default function LuckySpin() {
             ) : (
               <View style={{ maxHeight: 360 }}>
                 <ScrollView>
-                  {history.filter(h => h.label !== 'Try Again').map(h => (
-                    <View key={`${h.n}-${h.ts}`} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
-                      <Text style={{ color: '#333' }}>Prize</Text>
-                      <Text style={{ color: '#B8860B', fontWeight: '800' }}>{h.label}</Text>
-                    </View>
-                  ))}
+                  {history.filter(h => h.label !== 'Try Again').map(h => {
+                    const d = new Date(h.ts);
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    const hh = String(d.getHours()).padStart(2, '0');
+                    const min = String(d.getMinutes()).padStart(2, '0');
+                    const stamp = `${dd}/${mm}, ${hh}:${min}`;
+                    return (
+                      <View key={`${h.n}-${h.ts}`} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+                        <Text style={{ color: '#333' }}>{stamp}</Text>
+                        <Text style={{ color: '#B8860B', fontWeight: '800' }}>{h.label}</Text>
+                      </View>
+                    );
+                  })}
                 </ScrollView>
               </View>
             )}
